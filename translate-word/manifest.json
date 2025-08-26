@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Medium Global Translator",
+  "version": "1.0",
+  "description": "Medium에서 텍스트를 드래그하면 Google로 번역합니다. 옵션에서 개인 API 키를 설정해주세요.",
+
+  "permissions": ["storage"],
+
+  "host_permissions": ["https://translation.googleapis.com/"],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*.medium.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+
+  "options_page": "options.html",
+
+  "action": {
+    "default_title": "번역기 옵션 설정하기"
+  }
+}
