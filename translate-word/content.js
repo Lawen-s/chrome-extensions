@@ -1,14 +1,10 @@
 
 // 번역 요청 중복 방지를 위한 플래그
 let isTranslating = false;
+let lastTranslatedText = ''; // 마지막으로 번역된 텍스트 저장
 
 // 사용자가 마우스 버튼을 놓는 순간(mouseup)에 실행될 이벤트를 등록합니다.
 document.addEventListener('mouseup', function(event) {
-    // 이미 번역 중이면 무시
-    if (isTranslating) {
-      return;
-    }
-
     // 현재 페이지에서 선택된(드래그된) 텍스트를 가져옵니다.
     // .trim()은 양 끝의 공백을 제거해 줍니다.
     const selectedText = window.getSelection().toString().trim();
@@ -16,14 +12,14 @@ document.addEventListener('mouseup', function(event) {
     // 선택된 텍스트가 있을 경우에만 아래 로직을 실행합니다.
     // (단순히 페이지를 클릭만 한 경우는 무시합니다)
     if (selectedText) {
+      // 이미 번역 중이거나 같은 텍스트를 다시 선택한 경우 무시
+      if (isTranslating || selectedText === lastTranslatedText) {
+        console.log('중복 요청 무시:', selectedText);
+        return;
+      }
+
       // 디버깅을 위해 콘솔에 선택된 텍스트를 출력합니다. (F12 > Console 탭에서 확인 가능)
       console.log("Selected Text:", selectedText);
-      
-      // 텍스트 선택을 즉시 해제하여 중복 요청 방지
-      if (window.getSelection) {
-        window.getSelection().removeAllRanges();
-        console.log('텍스트 선택 즉시 해제됨');
-      }
       
       // 번역 시작 플래그 설정
       isTranslating = true;
@@ -44,6 +40,8 @@ document.addEventListener('mouseup', function(event) {
         // 응답이 성공적으로 오면, 커스텀 팝업으로 번역 결과를 보여줍니다.
         if (response && response.translatedText) {
           showCustomPopup(response.translatedText, 'success', selectedText);
+          // 성공적으로 번역된 텍스트 저장
+          lastTranslatedText = selectedText;
         }
         
         // 번역 완료 후 플래그 해제
@@ -64,9 +62,10 @@ function showCustomPopup(text, type = 'success', sourceText = '') {
   const removePopup = () => {
     console.log('팝업 제거 함수 실행');
     
+    // 팝업만 제거하고 텍스트 선택은 유지
     if (popup && popup.parentNode) {
       popup.parentNode.removeChild(popup);
-      console.log('팝업이 DOM에서 제거됨');
+      console.log('팝업이 DOM에서 제거됨 (텍스트 선택 유지)');
     } else {
       console.log('팝업 또는 부모 노드를 찾을 수 없음');
     }
@@ -84,15 +83,53 @@ function showCustomPopup(text, type = 'success', sourceText = '') {
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     padding: 24px;
-    max-width: 400px;
+    max-width: 500px;
     width: 90%;
+    max-height: 80vh;
     z-index: 10000;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     border: 1px solid #e1e5e9;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   `;
 
   // 팝업 내용 생성
   const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-bottom: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+  `;
+  
+  // 웹킷 브라우저용 스크롤바 스타일
+  content.addEventListener('DOMContentLoaded', () => {
+    content.style.setProperty('--scrollbar-thumb', '#c1c1c1');
+    content.style.setProperty('--scrollbar-track', '#f1f1f1');
+  });
+  
+  // CSS 스크롤바 스타일 추가
+  const style = document.createElement('style');
+  style.textContent = `
+    #translate-popup .content::-webkit-scrollbar {
+      width: 8px;
+    }
+    #translate-popup .content::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    #translate-popup .content::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+    #translate-popup .content::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  `;
+  document.head.appendChild(style);
   
   if (type === 'success') {
     // 성공 시: 원본 텍스트와 번역 결과 표시
@@ -101,18 +138,18 @@ function showCustomPopup(text, type = 'success', sourceText = '') {
     content.innerHTML = `
       <div style="margin-bottom: 16px;">
         <div style="font-size: 14px; color: #666; margin-bottom: 8px;">${domain} 내용:</div>
-        <div style="font-size: 16px; color: #333; background: #f8f9fa; padding: 12px; border-radius: 8px; border-left: 4px solid #007bff;">${sourceText}</div>
+        <div style="font-size: 16px; color: #333; background: #f8f9fa; padding: 12px; border-radius: 8px; border-left: 4px solid #007bff; word-wrap: break-word; line-height: 1.5;">${sourceText}</div>
       </div>
       <div style="margin-bottom: 20px;">
         <div style="font-size: 14px; color: #666; margin-bottom: 8px;">번역 결과:</div>
-        <div style="font-size: 18px; color: #2c3e50; font-weight: 500; line-height: 1.4;">${text}</div>
+        <div style="font-size: 18px; color: #2c3e50; font-weight: 500; line-height: 1.6; word-wrap: break-word;">${text}</div>
       </div>
     `;
   } else {
     // 에러 시: 에러 메시지만 표시
     content.innerHTML = `
       <div style="margin-bottom: 20px;">
-        <div style="font-size: 16px; color: #dc3545; text-align: center;">⚠️ ${text}</div>
+        <div style="font-size: 16px; color: #dc3545; text-align: center; word-wrap: break-word;">⚠️ ${text}</div>
       </div>
     `;
   }
@@ -131,6 +168,8 @@ function showCustomPopup(text, type = 'success', sourceText = '') {
     cursor: pointer;
     width: 100%;
     transition: background-color 0.2s;
+    flex-shrink: 0;
+    margin-top: auto;
   `;
   
   confirmButton.addEventListener('mouseenter', () => {
