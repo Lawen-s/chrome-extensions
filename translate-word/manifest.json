@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Medium Global Translator",
-  "version": "1.0",
-  "description": "Medium에서 텍스트를 드래그하면 Google로 번역합니다. 옵션에서 개인 API 키를 설정해주세요.",
+  "version": "1.1",
+  "description": "Translates text on Medium using Google Translate. Please set your personal API key in the options.",
 
   "permissions": ["storage"],
 
@@ -22,7 +22,7 @@
   "options_page": "options.html",
 
   "action": {
-    "default_title": "번역기 옵션 설정하기",
+    "default_title": "Open Translator Options",
     "default_icon": "icons/icon.png"
   },
 
