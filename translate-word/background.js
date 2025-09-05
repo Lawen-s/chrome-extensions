@@ -2,8 +2,9 @@
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.text) {
-    chrome.storage.sync.get('googleApiKey', (data) => {
+    chrome.storage.sync.get(['googleApiKey', 'targetLanguage'], (data) => {
       const apiKey = data.googleApiKey;
+      const savedTargetLanguage = data.targetLanguage;
 
       if (!apiKey) {
         console.log("API 키가 설정되지 않았습니다.");
@@ -13,7 +14,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       }
 
       const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
-      const targetLanguage = chrome.i18n.getUILanguage().split('-')[0];
+      
+      // 저장된 언어 설정이 있으면 사용하고, 없으면 브라우저 언어 자동 감지
+      let targetLanguage;
+      if (savedTargetLanguage && savedTargetLanguage !== 'auto') {
+        targetLanguage = savedTargetLanguage;
+      } else {
+        targetLanguage = chrome.i18n.getUILanguage().split('-')[0];
+      }
 
       fetch(url, {
         method: 'POST',
