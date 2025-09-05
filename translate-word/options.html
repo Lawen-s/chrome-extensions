@@ -1,16 +1,38 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Key Settings</title>
   </head>
   <body>
-    <h1>Google API Key 설정</h1>
-    <p>Google Cloud에서 발급받은 API 키를 입력하세요.</p>
+    <h1>Google API Key Settings</h1>
+    <p>Enter the API key obtained from Google Cloud.</p>
     <input type="password" id="apiKeyInput" size="50" />
-    <button id="saveButton">저장</button>
+    <button id="saveButton">Save</button>
     <p id="status"></p>
+    
+    <h2>Translation Settings</h2>
+    <p>Select the target language for translation:</p>
+    <select id="targetLanguageSelect">
+      <option value="ko">Korean</option>
+      <option value="ja">Japanese</option>
+      <option value="zh">Chinese</option>
+      <option value="es">Spanish</option>
+      <option value="fr">French</option>
+      <option value="de">German</option>
+      <option value="ru">Russian</option>
+      <option value="pt">Portuguese</option>
+      <option value="it">Italian</option>
+      <option value="ar">Arabic</option>
+      <option value="hi">Hindi</option>
+      <option value="th">Thai</option>
+      <option value="vi">Vietnamese</option>
+      <option value="auto">Auto-detect browser language</option>
+    </select>
+    <button id="saveLanguageButton">Save Language Settings</button>
+    <p id="languageStatus"></p>
+    
     <script src="options.js"></script>
   </body>
 </html>
